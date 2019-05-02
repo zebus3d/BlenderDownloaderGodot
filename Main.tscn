@@ -1,9 +1,8 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://Lato-Regular-Font.tres" type="DynamicFontData" id=1]
 [ext_resource path="res://App.gd" type="Script" id=2]
 [ext_resource path="res://icon.png" type="Texture" id=3]
-[ext_resource path="res://TitleBar.gd" type="Script" id=4]
 
 [sub_resource type="DynamicFont" id=1]
 size = 17
@@ -110,6 +109,7 @@ margin_bottom = 98.0
 text = "v0.0.1"
 
 [node name="Warning" type="RichTextLabel" parent="."]
+visible = false
 margin_left = 280.0
 margin_top = 127.0
 margin_right = 440.0
@@ -147,34 +147,6 @@ Builds from Hugo Lucurcio's Unofficial Godot Engine builds"
 
 [node name="HTTPRequest" type="HTTPRequest" parent="."]
 
-[node name="TitleBar" type="Control" parent="."]
-anchor_right = 1.0
-margin_bottom = 33.0
-script = ExtResource( 4 )
-
-[node name="ColorRect" type="ColorRect" parent="TitleBar"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 1
-color = Color( 0.138062, 0.166409, 0.226563, 1 )
-
-[node name="CloseButton" type="Button" parent="TitleBar"]
-anchor_left = 1.0
-anchor_right = 1.0
-margin_left = -31.0
-margin_top = 2.0
-margin_bottom = 29.0
-text = "X"
-flat = true
-
-[node name="MinimizeButton" type="Button" parent="TitleBar"]
-margin_left = 410.562
-margin_top = 2.0
-margin_right = 438.562
-margin_bottom = 29.0
-text = "_"
-flat = true
-
 [connection signal="item_selected" from="SystemSelector" to="." method="_on_SystemSelector_item_selected"]
 [connection signal="item_selected" from="OSSelector" to="." method="_on_OSSelector_item_selected"]
 [connection signal="pressed" from="DownloadButton" to="." method="_on_DownloadButton_pressed"]
@@ -182,6 +154,3 @@ flat = true
 [connection signal="meta_clicked" from="Warning" to="." method="_on_Warning_meta_clicked"]
 [connection signal="meta_clicked" from="AboutDialog/Label2" to="." method="_on_Label2_meta_clicked"]
 [connection signal="request_completed" from="HTTPRequest" to="." method="_on_HTTPRequest_request_completed"]
-[connection signal="gui_input" from="TitleBar" to="TitleBar" method="_on_TitleBar_gui_input"]
-[connection signal="pressed" from="TitleBar/CloseButton" to="TitleBar" method="_on_CloseButton_pressed"]
-[connection signal="pressed" from="TitleBar/MinimizeButton" to="TitleBar" method="_on_MinimizeButton_pressed"]
