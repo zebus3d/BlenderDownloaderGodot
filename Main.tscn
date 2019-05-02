@@ -146,7 +146,6 @@ Visit the repository to file bug reports or contribute!
 Builds from Hugo Lucurcio's Unofficial Godot Engine builds"
 
 [node name="HTTPRequest" type="HTTPRequest" parent="."]
-
 [connection signal="item_selected" from="SystemSelector" to="." method="_on_SystemSelector_item_selected"]
 [connection signal="item_selected" from="OSSelector" to="." method="_on_OSSelector_item_selected"]
 [connection signal="pressed" from="DownloadButton" to="." method="_on_DownloadButton_pressed"]

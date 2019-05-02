@@ -8,7 +8,7 @@ var file_ext = ''
 var date = ''
 var up_to_date = false
 var blender_hash = ''
-
+var button_clicked = 0
 
 func _ready():
 	$HTTPRequest.request("https://builder.blender.org/download/")
@@ -26,6 +26,7 @@ func _ready():
 			file_ext = ".tar.bz2"
 			_disable_arch(true)
 
+
 	# Add the date and extension to the file name to compare to previous versions
 	date = OS.get_date(true)
 	date = str(date['day']) + '-' + str(date['month']) + '-' + str(date['year'])
@@ -34,7 +35,7 @@ func _ready():
 
 	$ProgressBar.value = 0
 	up_to_date = is_up_to_date()
-	update_download_link()
+	
 	
 
 func is_up_to_date():
@@ -59,9 +60,6 @@ func update_download_link():
 		download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-OSX-10.9-x86_64.zip'
 	else:
 		download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-linux-glibc224-x86_64.tar.bz2'
-	
-	print("concatenar")
-	print(download_link)
 	print('[+] Updating download link: ', download_link)
 
 
@@ -93,6 +91,7 @@ func _on_SystemSelector_item_selected(_ID):
 	up_to_date = false
 
 func _on_DownloadButton_pressed():
+	button_clicked = 1
 	_update_file_name()
 	
 	var file_path = "user://" + file_name
@@ -132,9 +131,7 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 #func _on_HTTPRequest_request_completed(result, response_code, _headers, _body):
 	# When the zip is downloaded
 	
-#	print("aqui")
 	var all = body.get_string_from_utf8()
-#	print(all)
 	
 	var regex = RegEx.new()
 	regex.compile(".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-x86_64.tar.bz2).*")
@@ -143,22 +140,27 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 		blender_hash = rresult.get_string(2)
 		print(rresult.get_string(2))
 	
-	print("[+] Download completed ", result, ", ", response_code)
-	var cwd = OS.get_user_data_dir()
-	if current_os == "Windows":
-		# Unzip file
-		var _command = OS.execute("unzip.exe", [cwd + '/' + file_name, '-d', cwd], true)
-		OS.execute("mv", [cwd + '/godot.exe', cwd + '/godot-nightly.exe'], true)
-		up_to_date = is_up_to_date()
-		# Open the dir
-		OS.shell_open(OS.get_user_data_dir())
-	elif current_os == "X11":
-		OS.execute('/bin/tar jxf', [cwd + '/' + file_name], false)
-		OS.execute('/usr/bin/chmod', ['+x', cwd + '/' + file_name], false)
-		up_to_date = is_up_to_date()
-		OS.shell_open(OS.get_user_data_dir())
-	else:
-		print('Todo on osx')
+	update_download_link()
+	
+	
+	if button_clicked == 1:
+		print("[+] Download completed ", result, ", ", response_code)
+		var cwd = OS.get_user_data_dir()
+		if current_os == "Windows":
+			# Unzip file
+			var _command = OS.execute("unzip.exe", [cwd + '/' + file_name, '-d', cwd], true)
+			OS.execute("mv", [cwd + '/godot.exe', cwd + '/godot-nightly.exe'], true)
+			up_to_date = is_up_to_date()
+			# Open the dir
+			OS.shell_open(OS.get_user_data_dir())
+		elif current_os == "X11":
+			OS.execute('/bin/tar jxf', [cwd + '/' + file_name], false)
+			OS.execute('/usr/bin/chmod', ['+x', cwd + '/' + file_name], false)
+			up_to_date = is_up_to_date()
+			OS.shell_open(OS.get_user_data_dir())
+		else:
+			print('Todo on osx')
+		button_clicked = 0
 
 func list_files_in_directory(path):
 	# By volzhs
