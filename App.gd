@@ -141,7 +141,7 @@ func _process(_delta):
 		$ProgressBar.value = current*100/size
 		
 	if links_ready:
-		$DownloadButton.disabled = false		
+		$DownloadButton.disabled = false
 	else:
 		$DownloadButton.disabled = true
 		
