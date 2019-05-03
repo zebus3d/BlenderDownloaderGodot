@@ -41,16 +41,13 @@ func _ready():
 	
 
 func is_up_to_date():
-	if links_ready:
-		# Check if the daily zip already exists on our system
-		var dir = Directory.new()
-		var full_path = OS.get_user_data_dir() + '/' + file_name 
-		if dir.file_exists(full_path):
-			$DownloadButton.text = "Open Directory"
-			$DownloadButton.disabled = false
-			return true
-		else:
-			return false
+	# Check if the daily zip already exists on our system
+	var dir = Directory.new()
+	var full_path = OS.get_user_data_dir() + '/' + file_name 
+	if dir.file_exists(full_path):
+		$DownloadButton.text = "Open Directory"
+		$DownloadButton.disabled = false
+		return true
 	else:
 		return false
 
