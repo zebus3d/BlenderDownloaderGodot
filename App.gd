@@ -10,23 +10,57 @@ var up_to_date = false
 var blender_hash = ''
 var button_clicked = false
 var links_ready = false
+var matchRule = ''
+var presel = 0
 
+func getUrl():
+	print("obteniendo la url")
+	#print($OSSelector.text)
+	#print($SystemSelector.text)
+	var architecture = $SystemSelector.text
+	
+	# nombres de versiones:
+	#blender-2.80-f877022956df-linux-glibc224-x86_64.tar.bz2
+	#blender-2.80-8f1951f555f5-linux-glibc224-i686.tar.bz2
+	#blender-2.80-6ef48b13186c-win64.zip
+	#blender-2.80-e2d04229c38b-win32.zip
+	#blender-2.80-3dc9da3a74ee-OSX-10.9-x86_64.zip
+	
+	if $OSSelector.text == 'Linux':
+		if architecture == 'x64':
+			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-x86_64.tar.bz2).*"
+		elif architecture == 'x32':
+			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-i686.tar.bz2).*"
+			
+	if $OSSelector.text == 'Windows':
+		if architecture == 'x64':
+			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-win64.zip).*"
+		elif architecture == 'x32':
+			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-win32.zip).*"
+			
+	if $OSSelector.text == 'Mac':
+		matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-x86_64.tar.bz2).*"
+	
+	$HTTPRequest.request("https://builder.blender.org/download/")
+
+func _disable_arch(pesel, condition):
+	$SystemSelector.select(presel)
+	$SystemSelector.disabled = condition
 
 func _ready():
-	$HTTPRequest.request("https://builder.blender.org/download/")
 	match current_os:
 		"Windows":
 			$OSSelector.select(0)
 			file_ext = ".zip"
-			_disable_arch(false)
+			_disable_arch($SystemSelector.selected, false)
 		"OSX":
 			$OSSelector.select(1)
 			file_ext = ".zip"
-			_disable_arch(true)
+			_disable_arch(0, true)
 		"X11":
 			$OSSelector.select(2)
 			file_ext = ".tar.bz2"
-			_disable_arch(true)
+			_disable_arch($SystemSelector.selected, false)
 
 
 	# Add the date and extension to the file name to compare to previous versions
@@ -38,6 +72,7 @@ func _ready():
 	$ProgressBar.value = 0
 	up_to_date = is_up_to_date()
 	
+	getUrl()
 	
 
 func is_up_to_date():
@@ -52,18 +87,25 @@ func is_up_to_date():
 		return false
 
 func update_download_link():
-	# Get the proper download link
+	var architecture = $SystemSelector.text
 	if blender_hash:
-		if $OSSelector.selected == 0:
-			if $SystemSelector.selected == 1:
-				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-win32.zip'
-			else:
+		
+		if $OSSelector.text == 'Windows':
+			if architecture == 'x64':
 				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-win64.zip'	
-		elif $OSSelector.selected == 1:
+			else:
+				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-win32.zip'				
+		
+		elif $OSSelector.text == 'Mac':
 			download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-OSX-10.9-x86_64.zip'
-		else:
-			download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-linux-glibc224-x86_64.tar.bz2'
-		print('[+] Updating download link: ', download_link)
+		
+		elif $OSSelector.text == 'Linux':
+			if architecture == 'x64':
+				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-linux-glibc224-x86_64.tar.bz2'
+			else:
+				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-linux-glibc224-i686.tar.bz2'
+		
+		print('Download link: ', download_link)
 		links_ready = true
 	else:
 		print('Blender hash is void!')
@@ -77,20 +119,16 @@ func _on_OSSelector_item_selected(ID):
 	match ID:
 		0:
 			file_ext = ".zip"
-			_disable_arch(false)
+			_disable_arch($SystemSelector.selected, false)
 		1:
 			file_ext = ".zip"
-			_disable_arch(true)
+			_disable_arch(0, true)
 		2:
 			file_ext = ".tar.bz2"
-			_disable_arch(true)
-			
-	update_download_link()
-
-
-func _disable_arch(b):
-	$SystemSelector.disabled = b
-	$SystemSelector.select(0)
+			_disable_arch($SystemSelector.selected, false)
+	
+	getUrl()
+	#update_download_link()
 
 
 func _on_SystemSelector_item_selected(_ID):
@@ -112,11 +150,12 @@ func _on_DownloadButton_pressed():
 		else:
 			# No file found here so we can go ahead and download
 			# the latest version
-			print("[+] Starting download")
+			print("Starting download in:")
 			$DownloadButton.disabled = true
 			$DownloadButton.text = "Downloading..."
 			# Checking if a previous version exists and removing them
-			print(list_files_in_directory(OS.get_user_data_dir()))
+			print(OS.get_user_data_dir())
+			#print(list_files_in_directory(OS.get_user_data_dir()))
 			var dir = Directory.new()
 			for file in list_files_in_directory(OS.get_user_data_dir()):
 				if 'blender-2.80' in file:
@@ -125,7 +164,7 @@ func _on_DownloadButton_pressed():
 			# Downloading file
 			$HTTPRequest.set_download_file(file_path)
 			$HTTPRequest.request(download_link)
-			print($HTTPRequest.get_body_size())
+			#print($HTTPRequest.get_body_size())
 	else:
 		print("links not are ready!")
 
@@ -142,23 +181,33 @@ func _process(_delta):
 	else:
 		$DownloadButton.disabled = true
 		
-func _on_HTTPRequest_request_completed(result, response_code, headers, body):
-#func _on_HTTPRequest_request_completed(result, response_code, _headers, _body):
-	# When the zip is downloaded
+#func _on_HTTPRequest_request_completed(result, response_code, headers, body):
+func _on_HTTPRequest_request_completed(result, response_code, _headers, _body):
 	
-	var all = body.get_string_from_utf8()
+	# si se hace click al boton descarga que no vuelva
+	# a comprobar las urls porque ya deberian estar
+	# procesadas anteriormente:
+	if button_clicked == false:
+		# regex:
+		print("procesando el regex")
+		var all = _body.get_string_from_utf8()
+		
+		var regex = RegEx.new()
+		regex.compile(matchRule)
+		var regex_match = regex.search(all)
+		if regex_match:
+			blender_hash = regex_match.get_string(2)
+			print("match!")
+		else:
+			print("no se encontro el regex")
+		
+		matchRule = ''
+		if blender_hash:
+			update_download_link()
 	
-	var regex = RegEx.new()
-	regex.compile(".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-x86_64.tar.bz2).*")
-	var regex_match = regex.search(all)
-	if regex_match:
-		blender_hash = regex_match.get_string(2)
-#		print(regex_match.get_string(2))
-	
-	update_download_link()
-	
+	# si se hace click en el boton y los enlaces estan listos:
 	if button_clicked == true and links_ready == true:
-#		print("[+] Download completed ", result, ", ", response_code)
+		print("Download completed ", result, ", ", response_code)
 		var cwd = OS.get_user_data_dir()
 		if current_os == "Windows":
 			# Unzip file
@@ -168,6 +217,10 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 			# Open the dir
 			OS.shell_open(OS.get_user_data_dir())
 		elif current_os == "X11":
+			print("descomprimiendo en linux")
+			print("en: ")
+			print(cwd)
+			print(file_name)
 			OS.execute('/bin/tar jxf', [cwd + '/' + file_name], false)
 			OS.execute('/usr/bin/chmod', ['+x', cwd + '/' + file_name], false)
 			up_to_date = is_up_to_date()
