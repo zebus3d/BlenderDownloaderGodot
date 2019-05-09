@@ -39,7 +39,7 @@ func getUrl():
 			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-win32.zip).*"
 			
 	if $OSSelector.text == 'Mac':
-		matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-x86_64.tar.bz2).*"
+		matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-OSX-10.9-x86_64.zip).*"
 	
 	$HTTPRequest.request("https://builder.blender.org/download/")
 
