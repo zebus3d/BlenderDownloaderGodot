@@ -10,8 +10,13 @@ var up_to_date = false
 var blender_hash = ''
 var button_clicked = false
 var links_ready = false
-var matchRule = ''
 var presel = 0
+var matchRuleLinux64 = ""
+var matchRuleLinux32 = ""
+var matchRuleWindow64 = ""
+var matchRuleWindow32 = ""
+var matchRuleMac64 = ""
+
 
 func getUrl():
 	print("obteniendo la url")
@@ -20,26 +25,32 @@ func getUrl():
 	var architecture = $SystemSelector.text
 	
 	# nombres de versiones:
-	#blender-2.80-f877022956df-linux-glibc224-x86_64.tar.bz2
-	#blender-2.80-8f1951f555f5-linux-glibc224-i686.tar.bz2
+	#blender-2.80-427c75e4c20b-linux-glibc224-x86_64.tar.bz2
+	#blender-2.80-427c75e4c20b-linux-glibc224-i686.tar.bz2
 	#blender-2.80-6ef48b13186c-win64.zip
 	#blender-2.80-e2d04229c38b-win32.zip
 	#blender-2.80-3dc9da3a74ee-OSX-10.9-x86_64.zip
 	
-	if $OSSelector.text == 'Linux':
-		if architecture == 'x64':
-			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-x86_64.tar.bz2).*"
-		elif architecture == 'x32':
-			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-i686.tar.bz2).*"
-			
-	if $OSSelector.text == 'Windows':
-		if architecture == 'x64':
-			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-win64.zip).*"
-		elif architecture == 'x32':
-			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-win32.zip).*"
-			
-	if $OSSelector.text == 'Mac':
-		matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-x86_64.tar.bz2).*"
+#	if $OSSelector.text == 'Linux':
+#		if architecture == 'x64':
+#			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-x86_64.tar.bz2).*"
+#		elif architecture == 'x32':
+#			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-i686.tar.bz2).*"
+#
+#	if $OSSelector.text == 'Windows':
+#		if architecture == 'x64':
+#			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-win64.zip).*"
+#		elif architecture == 'x32':
+#			matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-win32.zip).*"
+#
+#	if $OSSelector.text == 'Mac':
+#		matchRule = ".*(blender-2.80-)([0-9a-zA-Z]*)(-OSX-10.9-x86_64.zip).*"
+	
+	matchRuleLinux64 = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-x86_64.tar.bz2).*"
+	matchRuleLinux32 = ".*(blender-2.80-)([0-9a-zA-Z]*)(-linux-glibc224-i686.tar.bz2).*"
+	matchRuleWindow64 = ".*(blender-2.80-)([0-9a-zA-Z]*)(-win64.zip).*"
+	matchRuleWindow32 = ".*(blender-2.80-)([0-9a-zA-Z]*)(-win32.zip).*"
+	matchRuleMac64 = ".*(blender-2.80-)([0-9a-zA-Z]*)(-OSX-10.9-x86_64.zip).*"
 	
 	$HTTPRequest.request("https://builder.blender.org/download/")
 
@@ -193,15 +204,20 @@ func _on_HTTPRequest_request_completed(result, response_code, _headers, _body):
 		var all = _body.get_string_from_utf8()
 		
 		var regex = RegEx.new()
-		regex.compile(matchRule)
-		var regex_match = regex.search(all)
-		if regex_match:
-			blender_hash = regex_match.get_string(2)
-			print("match!")
-		else:
-			print("no se encontro el regex")
+		var matchrules = [matchRuleLinux64, matchRuleLinux32, matchRuleWindow64, matchRuleWindow32, matchRuleMac64]
 		
-		matchRule = ''
+		for i in range(len(matchrules)):
+			regex.compile(matchrules[i])
+			var regex_match = regex.search(all)
+			if regex_match:
+				blender_hash = regex_match.get_string(2)
+				matchrules[i] = regex_match.get_string(2)
+				print("match!")
+				print(blender_hash)
+			else:
+				print("no se encontro el regex")
+		
+		print(matchrules[1])
 		if blender_hash:
 			update_download_link()
 	
