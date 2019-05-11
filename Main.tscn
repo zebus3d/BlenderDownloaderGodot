@@ -75,7 +75,6 @@ margin_top = 226.0
 margin_right = 450.0
 margin_bottom = 250.0
 value = 56.08
-percent_visible = false
 
 [node name="Title" type="Label" parent="."]
 margin_left = 100.0
