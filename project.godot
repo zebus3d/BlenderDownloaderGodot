@@ -30,6 +30,10 @@ window/size/resizable=false
 
 max=false
 
+[network]
+
+limits/debugger_stdout/max_chars_per_second=4096
+
 [rendering]
 
 environment/default_environment="res://default_env.tres"

@@ -16,7 +16,11 @@ var matchRuleLinux32 = ""
 var matchRuleWindow64 = ""
 var matchRuleWindow32 = ""
 var matchRuleMac64 = ""
-
+var linux64_hash = ""
+var linux32_hash = ""
+var win64_hash = ""
+var win32_hash = ""
+var mac64_hash = ""
 
 func getUrl():
 	print("obteniendo la url")
@@ -103,18 +107,23 @@ func update_download_link():
 		
 		if $OSSelector.text == 'Windows':
 			if architecture == 'x64':
-				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-win64.zip'	
+				print("Version Windows 64:"+win64_hash)
+				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(win64_hash)+'-win64.zip'
 			else:
-				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-win32.zip'				
+				print("Version Windows 32:"+win32_hash)
+				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(win32_hash)+'-win32.zip'
 		
 		elif $OSSelector.text == 'Mac':
-			download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-OSX-10.9-x86_64.zip'
+			print("Version Windows MAC:"+mac64_hash)
+			download_link = 'https://builder.blender.org/download/blender-2.80-'+str(mac64_hash)+'-OSX-10.9-x86_64.zip'
 		
 		elif $OSSelector.text == 'Linux':
 			if architecture == 'x64':
-				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-linux-glibc224-x86_64.tar.bz2'
+				print("Version linux 64:"+linux64_hash)
+				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(linux64_hash)+'-linux-glibc224-x86_64.tar.bz2'
 			else:
-				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(blender_hash)+'-linux-glibc224-i686.tar.bz2'
+				print("Version linux 32:"+linux32_hash)
+				download_link = 'https://builder.blender.org/download/blender-2.80-'+str(linux32_hash)+'-linux-glibc224-i686.tar.bz2'
 		
 		print('Download link: ', download_link)
 		links_ready = true
@@ -212,12 +221,14 @@ func _on_HTTPRequest_request_completed(result, response_code, _headers, _body):
 			if regex_match:
 				blender_hash = regex_match.get_string(2)
 				matchrules[i] = regex_match.get_string(2)
-				print("match!")
-				print(blender_hash)
+				print( str(i) + " " + "match! : " + matchrules[i])
+				linux64_hash = matchrules[0]
+				linux32_hash = matchrules[1]
+				win64_hash = matchrules[2]
+				win32_hash = matchrules[3]
+				mac64_hash = matchrules[4]
 			else:
-				print("no se encontro el regex")
-		
-		print(matchrules[1])
+				print("no se encontro el regex")		
 		if blender_hash:
 			update_download_link()
 	
@@ -233,12 +244,24 @@ func _on_HTTPRequest_request_completed(result, response_code, _headers, _body):
 			# Open the dir
 			OS.shell_open(OS.get_user_data_dir())
 		elif current_os == "X11":
-			print("descomprimiendo en linux")
-			print("en: ")
-			print(cwd)
-			print(file_name)
-			OS.execute('/bin/tar jxf', [cwd + '/' + file_name], false)
-			OS.execute('/usr/bin/chmod', ['+x', cwd + '/' + file_name], false)
+			print("Extracting in linux")
+			print("Directory: " + str(cwd))
+			
+			var name = file_name.split('.tar')
+			name = name[0]
+#			print(name)
+			
+			var output = []
+#			OS.execute( 'ls', ['-al', '.'], true, output )
+#			OS.execute('tar', ['-jxvf', cwd + '/' + file_name, '--directory', cwd + "/" + name], false, output )
+			OS.execute('tar', ['-jxvf', cwd + '/' + file_name, '--directory', cwd ], true, output )
+			for line in output:
+			    print( line )
+			
+#			OS.execute('/usr/bin/chmod', ['+x', cwd + '/' + file_name], false, output)
+#			for line in output:
+#			    print( line )
+
 			up_to_date = is_up_to_date()
 			OS.shell_open(OS.get_user_data_dir())
 		else:
