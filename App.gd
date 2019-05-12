@@ -247,18 +247,15 @@ func _on_HTTPRequest_request_completed(result, response_code, _headers, _body):
 			print("Extracting in linux")
 			print("Directory: " + str(cwd))
 			
+			# el nombre sin extension:
 			var name = file_name.split('.tar')
 			name = name[0]
 #			print(name)
 			
 			var output = []
 #			OS.execute( 'ls', ['-al', '.'], true, output )
-#			OS.execute('tar', ['-jxvf', cwd + '/' + file_name, '--directory', cwd + "/" + name], false, output )
-			OS.execute('tar', ['-jxvf', cwd + '/' + file_name, '--directory', cwd , "--xform", 's|^|'+name+'/|S'], true, output )
-			for line in output:
-			    print( line )
-			
-#			OS.execute('/usr/bin/chmod', ['+x', cwd + '/' + file_name], false, output)
+			OS.execute( 'mkdir', ['-p', cwd + '/' + name ], false)
+			OS.execute('tar', ['-jxvf', cwd + '/' + file_name, '--directory', cwd + "/" + name, '--strip', '1'], false )
 #			for line in output:
 #			    print( line )
 
