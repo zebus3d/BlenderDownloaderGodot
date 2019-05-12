@@ -254,7 +254,7 @@ func _on_HTTPRequest_request_completed(result, response_code, _headers, _body):
 			var output = []
 #			OS.execute( 'ls', ['-al', '.'], true, output )
 #			OS.execute('tar', ['-jxvf', cwd + '/' + file_name, '--directory', cwd + "/" + name], false, output )
-			OS.execute('tar', ['-jxvf', cwd + '/' + file_name, '--directory', cwd ], true, output )
+			OS.execute('tar', ['-jxvf', cwd + '/' + file_name, '--directory', cwd , "--xform", 's|^|'+name+'/|S'], true, output )
 			for line in output:
 			    print( line )
 			
