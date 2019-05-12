@@ -32,7 +32,7 @@ max=false
 
 [network]
 
-limits/debugger_stdout/max_chars_per_second=4096
+limits/debugger_stdout/max_chars_per_second=8096
 
 [rendering]
 
